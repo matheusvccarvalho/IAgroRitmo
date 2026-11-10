@@ -1,0 +1,3403 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#1F6845" />
+<title>IAgroritmo — Inteligência Agroclimática</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  /* =========================
+     IAgroritmo — Design System
+     ========================= */
+  :root {
+    --green-forest: #10291F;
+    --green-primary: #1F6845;
+    --green-secondary: #65A878;
+    --green-light: #DCE9D9;
+    --bg: #F5F7F2;
+    --white: #FFFFFF;
+    --text: #1C2921;
+    --gray: #748078;
+    --gray-light: #E4E8E3;
+    --danger: #C0392B;
+    --warning: #D98E04;
+    --info: #2E7D6F;
+    --shadow-sm: 0 1px 2px rgba(16, 41, 31, 0.06);
+    --shadow-md: 0 4px 12px rgba(16, 41, 31, 0.08);
+    --shadow-lg: 0 12px 32px rgba(16, 41, 31, 0.12);
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 22px;
+    --radius-xl: 28px;
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
+  input, select, textarea { font-family: inherit; }
+  a { color: inherit; text-decoration: none; }
+  img, svg { display: block; max-width: 100%; }
+
+  /* ============ LAYOUT ============ */
+  .app {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    max-width: 100vw;
+  }
+  @media (min-width: 900px) {
+    .app {
+      grid-template-columns: 260px 1fr;
+      grid-template-rows: 1fr;
+    }
+  }
+
+  /* ============ SIDEBAR (desktop) ============ */
+  .sidebar {
+    display: none;
+    background: linear-gradient(180deg, var(--green-forest) 0%, #0d2119 100%);
+    color: var(--white);
+    padding: 28px 20px;
+    flex-direction: column;
+    gap: 8px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  @media (min-width: 900px) {
+    .sidebar { display: flex; }
+  }
+  .sidebar .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 8px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+  .sidebar .brand-mark {
+    width: 42px; height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--green-secondary), var(--green-primary));
+    display: grid; place-items: center;
+    box-shadow: 0 4px 12px rgba(101,168,120,0.3);
+  }
+  .sidebar .brand-mark svg { color: white; }
+  .sidebar .brand-name { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+  .sidebar .brand-sub { font-size: 11px; opacity: 0.6; letter-spacing: 0.5px; text-transform: uppercase; }
+  .sidebar nav { display: flex; flex-direction: column; gap: 4px; }
+  .sidebar .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    color: rgba(255,255,255,0.75);
+    font-size: 14px; font-weight: 500;
+    transition: var(--transition);
+    position: relative;
+  }
+  .sidebar .nav-item:hover { background: rgba(255,255,255,0.06); color: white; }
+  .sidebar .nav-item.active {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+    color: white;
+    box-shadow: 0 4px 12px rgba(31,104,69,0.4);
+  }
+  .sidebar .nav-item .badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: white;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+  }
+  .sidebar .sidebar-footer {
+    margin-top: auto;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 11px;
+    opacity: 0.5;
+    line-height: 1.6;
+  }
+
+  /* ============ TOP BAR (mobile) ============ */
+  .topbar {
+    background: var(--white);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--gray-light);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  @media (min-width: 900px) {
+    .topbar { display: none; }
+  }
+  .topbar .brand-mini {
+    display: flex; align-items: center; gap: 10px;
+    flex: 1;
+  }
+  .topbar .brand-mini .mark {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--green-secondary), var(--green-primary));
+    display: grid; place-items: center;
+  }
+  .topbar .brand-mini .mark svg { color: white; width: 18px; height: 18px; }
+  .topbar .brand-mini .name { font-weight: 700; font-size: 15px; letter-spacing: -0.3px; }
+  .topbar .brand-mini .sub { font-size: 10px; color: var(--gray); letter-spacing: 0.3px; }
+  .topbar .icon-btn {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: var(--bg);
+    display: grid; place-items: center;
+    position: relative;
+    transition: var(--transition);
+  }
+  .topbar .icon-btn:active { transform: scale(0.94); }
+  .topbar .icon-btn .dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 8px; height: 8px;
+    background: var(--danger);
+    border-radius: 50%;
+    border: 2px solid var(--white);
+  }
+
+  /* ============ MAIN ============ */
+  .main {
+    padding: 18px;
+    padding-bottom: 110px;
+    max-width: 1200px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  @media (min-width: 900px) {
+    .main { padding: 32px 40px; padding-bottom: 40px; }
+  }
+
+  /* ============ BOTTOM NAV (mobile) ============ */
+  .bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--white);
+    border-top: 1px solid var(--gray-light);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    z-index: 100;
+    box-shadow: 0 -4px 16px rgba(16,41,31,0.06);
+  }
+  @media (min-width: 900px) {
+    .bottom-nav { display: none; }
+  }
+  .bottom-nav .bn-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 8px 4px;
+    color: var(--gray);
+    font-size: 10px;
+    font-weight: 500;
+    border-radius: 12px;
+    position: relative;
+    transition: var(--transition);
+  }
+  .bottom-nav .bn-item.active { color: var(--green-primary); }
+  .bottom-nav .bn-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px;
+    background: var(--green-primary);
+    border-radius: 0 0 4px 4px;
+  }
+  .bottom-nav .bn-item .bn-dot {
+    position: absolute;
+    top: 6px; right: calc(50% - 18px);
+    width: 7px; height: 7px;
+    background: var(--danger);
+    border-radius: 50%;
+    border: 1.5px solid white;
+  }
+
+  /* ============ VIEWS ============ */
+  .view { display: none; animation: fadeIn 0.3s ease; }
+  .view.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ COMMON COMPONENTS ============ */
+  .view-header {
+    margin-bottom: 20px;
+  }
+  @media (min-width: 900px) {
+    .view-header { margin-bottom: 28px; }
+  }
+  .view-title {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: var(--green-forest);
+    margin-bottom: 4px;
+  }
+  @media (min-width: 900px) { .view-title { font-size: 30px; } }
+  .view-subtitle {
+    font-size: 14px;
+    color: var(--gray);
+  }
+
+  .card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(16,41,31,0.04);
+    transition: var(--transition);
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card + .card { margin-top: 14px; }
+  @media (min-width: 900px) { .card + .card { margin-top: 18px; } }
+
+  .card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 14px;
+  }
+  .card-header .icon-wrap {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--green-light);
+    color: var(--green-primary);
+    display: grid; place-items: center;
+  }
+  .card-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--green-forest);
+  }
+  .card-header .hint {
+    font-size: 12px;
+    color: var(--gray);
+    margin-left: auto;
+  }
+
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 700px) {
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 900px) {
+    .grid { gap: 18px; }
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+    color: white;
+    box-shadow: 0 4px 12px rgba(31,104,69,0.25);
+  }
+  .btn-primary:hover { box-shadow: 0 6px 18px rgba(31,104,69,0.35); }
+  .btn-secondary {
+    background: var(--green-light);
+    color: var(--green-primary);
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--gray-light);
+    color: var(--text);
+  }
+  .btn-block { width: 100%; }
+  .btn-lg { padding: 16px 22px; font-size: 15px; min-height: 52px; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--green-light);
+    color: var(--green-primary);
+  }
+  .chip.warning { background: #FFF3D6; color: #946400; }
+  .chip.danger { background: #FBE2DF; color: #A02818; }
+  .chip.info { background: #DDEEEB; color: #1E5A50; }
+
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+
+  .value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green-forest);
+    letter-spacing: -0.5px;
+  }
+  .value-lg { font-size: 32px; }
+
+  .divider { height: 1px; background: var(--gray-light); margin: 14px 0; }
+
+  /* ============ DASHBOARD ============ */
+  .greeting {
+    background: linear-gradient(135deg, var(--green-forest) 0%, var(--green-primary) 100%);
+    color: white;
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .greeting::after {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(101,168,120,0.3) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .greeting .hello {
+    font-size: 13px;
+    opacity: 0.85;
+    margin-bottom: 4px;
+  }
+  .greeting .name {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+  .greeting .meta {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    font-size: 12px;
+    opacity: 0.9;
+  }
+  .greeting .meta span {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(255,255,255,0.12);
+    padding: 5px 10px;
+    border-radius: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .weather-card {
+    background: linear-gradient(135deg, #FFFFFF 0%, var(--green-light) 100%);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .weather-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .weather-temp {
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--green-forest);
+    letter-spacing: -2px;
+    line-height: 1;
+  }
+  .weather-temp sup { font-size: 20px; font-weight: 600; }
+  .weather-cond {
+    font-size: 14px;
+    color: var(--green-primary);
+    font-weight: 600;
+    margin-top: 4px;
+  }
+  .weather-icon {
+    width: 64px; height: 64px;
+    color: var(--green-primary);
+    opacity: 0.9;
+  }
+  .weather-details {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(16,41,31,0.08);
+  }
+  .weather-detail { text-align: center; }
+  .weather-detail .wd-label {
+    font-size: 10px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .weather-detail .wd-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--green-forest);
+  }
+  .weather-detail .wd-unit {
+    font-size: 11px;
+    color: var(--gray);
+    font-weight: 500;
+  }
+  .weather-time {
+    font-size: 11px;
+    color: var(--gray);
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  .alert-card {
+    background: linear-gradient(135deg, #FFF8E1 0%, #FFF3D6 100%);
+    border-left: 4px solid var(--warning);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .alert-card.danger {
+    background: linear-gradient(135deg, #FDECEA 0%, #FBE2DF 100%);
+    border-left-color: var(--danger);
+  }
+  .alert-card.info {
+    background: linear-gradient(135deg, #E8F5F2 0%, #DDEEEB 100%);
+    border-left-color: var(--info);
+  }
+  .alert-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.7);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .alert-card .alert-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--green-forest);
+    margin-bottom: 3px;
+  }
+  .alert-card .alert-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .activity-card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 1px solid rgba(16,41,31,0.04);
+  }
+  .activity-card:active { transform: scale(0.98); }
+  .activity-card:hover { box-shadow: var(--shadow-md); }
+  .activity-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .activity-icon.soja { background: linear-gradient(135deg, #DCE9D9, #B8D4B0); color: var(--green-primary); }
+  .activity-icon.milho { background: linear-gradient(135deg, #FFF3D6, #FFE8A8); color: #946400; }
+  .activity-icon.pecuaria { background: linear-gradient(135deg, #E8F5F2, #C9E4DD); color: #1E5A50; }
+  .activity-info { flex: 1; min-width: 0; }
+  .activity-name {
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--green-forest);
+    margin-bottom: 2px;
+  }
+  .activity-status {
+    font-size: 12px;
+    color: var(--gray);
+  }
+  .activity-status .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+  .status-ok { background: var(--green-secondary); }
+  .status-warn { background: var(--warning); }
+  .status-alert { background: var(--danger); }
+
+  .ai-card {
+    background: linear-gradient(135deg, var(--green-forest) 0%, var(--green-primary) 100%);
+    color: white;
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(101,168,120,0.4) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .ai-card .ai-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .ai-avatar {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.15);
+    display: grid; place-items: center;
+    backdrop-filter: blur(4px);
+  }
+  .ai-card .ai-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .ai-card .ai-sub {
+    font-size: 11px;
+    opacity: 0.8;
+  }
+  .ai-card .ai-summary {
+    font-size: 14px;
+    line-height: 1.55;
+    opacity: 0.95;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .ai-card .btn {
+    background: white;
+    color: var(--green-primary);
+    position: relative;
+  }
+
+  /* ============ CLIMA ============ */
+  .filter-bar {
+    display: flex; gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 16px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-chip {
+    padding: 8px 14px;
+    border-radius: 20px;
+    background: var(--white);
+    border: 1px solid var(--gray-light);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--text);
+    transition: var(--transition);
+  }
+  .filter-chip.active {
+    background: var(--green-primary);
+    color: white;
+    border-color: var(--green-primary);
+  }
+
+  .metric-card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    border: 1px solid rgba(16,41,31,0.04);
+  }
+  .metric-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .metric-head .metric-label {
+    font-size: 12px;
+    color: var(--gray);
+    font-weight: 500;
+  }
+  .metric-head .metric-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--green-light);
+    color: var(--green-primary);
+    display: grid; place-items: center;
+  }
+  .metric-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--green-forest);
+    letter-spacing: -0.5px;
+  }
+  .metric-unit {
+    font-size: 13px;
+    color: var(--gray);
+    font-weight: 500;
+    margin-left: 3px;
+  }
+  .metric-trend {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .trend-up { background: #FBE2DF; color: #A02818; }
+  .trend-down { background: #DDEEEB; color: #1E5A50; }
+  .trend-flat { background: var(--green-light); color: var(--green-primary); }
+
+  .chart-wrap {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    border: 1px solid rgba(16,41,31,0.04);
+  }
+  .chart-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--green-forest);
+  }
+  .chart-subtitle {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 2px;
+  }
+  .chart-container {
+    position: relative;
+    height: 220px;
+    width: 100%;
+  }
+  @media (min-width: 900px) {
+    .chart-container { height: 280px; }
+  }
+
+  .info-box {
+    background: var(--green-light);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: 13px;
+    color: var(--green-forest);
+    line-height: 1.5;
+  }
+  .info-box svg { flex-shrink: 0; margin-top: 1px; color: var(--green-primary); }
+
+  /* ============ PRODUÇÃO ============ */
+  .activity-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+    background: var(--white);
+    padding: 6px;
+    border-radius: 14px;
+    border: 1px solid var(--gray-light);
+  }
+  .activity-tab {
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray);
+    transition: var(--transition);
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .activity-tab.active {
+    background: linear-gradient(135deg, var(--green-primary), var(--green-secondary));
+    color: white;
+    box-shadow: 0 2px 8px rgba(31,104,69,0.25);
+  }
+
+  .cycle-timeline {
+    display: flex;
+    gap: 4px;
+    margin: 14px 0;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .cycle-stage {
+    flex: 1;
+    min-width: 90px;
+    padding: 10px 8px;
+    background: var(--bg);
+    border-radius: 10px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--gray);
+    border: 1.5px solid transparent;
+    transition: var(--transition);
+  }
+  .cycle-stage.current {
+    background: var(--green-light);
+    color: var(--green-primary);
+    font-weight: 700;
+    border-color: var(--green-primary);
+  }
+  .cycle-stage .stage-name { font-weight: 600; margin-top: 2px; }
+
+  .variable-list { display: flex; flex-direction: column; gap: 10px; }
+  .variable-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 12px;
+  }
+  .variable-item .var-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--green-primary);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .variable-item .var-info { flex: 1; }
+  .variable-item .var-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-forest);
+    margin-bottom: 2px;
+  }
+  .variable-item .var-desc {
+    font-size: 11px;
+    color: var(--gray);
+    line-height: 1.4;
+  }
+
+  /* ============ IA ASSISTANT ============ */
+  .ai-chat {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(16,41,31,0.06);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 200px);
+    min-height: 500px;
+    max-height: 720px;
+  }
+  @media (min-width: 900px) {
+    .ai-chat { height: 640px; }
+  }
+  .ai-chat-header {
+    padding: 16px;
+    background: linear-gradient(135deg, var(--green-forest), var(--green-primary));
+    color: white;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .ai-chat-header .ai-avatar-lg {
+    width: 44px; height: 44px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.15);
+    display: grid; place-items: center;
+    backdrop-filter: blur(4px);
+  }
+  .ai-chat-header .ai-name { font-weight: 700; font-size: 16px; }
+  .ai-chat-header .ai-status {
+    font-size: 11px; opacity: 0.85;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .ai-chat-header .ai-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: #6EE7A8;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #6EE7A8;
+  }
+  .ai-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    background: var(--bg);
+  }
+  .ai-msg {
+    max-width: 88%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    animation: msgIn 0.3s ease;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .ai-msg.bot {
+    background: var(--white);
+    color: var(--text);
+    border-bottom-left-radius: 4px;
+    align-self: flex-start;
+    box-shadow: var(--shadow-sm);
+  }
+  .ai-msg.user {
+    background: var(--green-primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+    align-self: flex-end;
+  }
+  .ai-msg .msg-title {
+    font-weight: 700;
+    color: var(--green-forest);
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .ai-msg .msg-section {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--gray-light);
+  }
+  .ai-msg .msg-section strong {
+    color: var(--green-primary);
+    font-size: 12px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .ai-msg ul { padding-left: 18px; margin-top: 4px; }
+  .ai-msg li { margin-bottom: 4px; font-size: 13px; }
+  .ai-msg .demo-notice {
+    margin-top: 10px;
+    padding: 8px 10px;
+    background: var(--green-light);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--green-primary);
+    display: flex; gap: 6px; align-items: flex-start;
+  }
+  .ai-quick {
+    padding: 12px 16px;
+    background: var(--white);
+    border-top: 1px solid var(--gray-light);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ai-quick::-webkit-scrollbar { display: none; }
+  .ai-quick-btn {
+    padding: 8px 12px;
+    background: var(--green-light);
+    color: var(--green-primary);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: var(--transition);
+  }
+  .ai-quick-btn:active { transform: scale(0.96); }
+  .ai-input-bar {
+    padding: 12px 14px;
+    background: var(--white);
+    border-top: 1px solid var(--gray-light);
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .ai-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid transparent;
+    border-radius: 24px;
+    font-size: 14px;
+    outline: none;
+    transition: var(--transition);
+  }
+  .ai-input:focus { border-color: var(--green-primary); background: white; }
+  .ai-send {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--green-primary);
+    color: white;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    transition: var(--transition);
+  }
+  .ai-send:active { transform: scale(0.92); }
+
+  /* ============ SIMULADOR ============ */
+  .sim-config {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid rgba(16,41,31,0.04);
+  }
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green-forest);
+    margin-bottom: 6px;
+  }
+  .form-select, .form-input {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: var(--transition);
+    min-height: 44px;
+  }
+  .form-select:focus, .form-input:focus {
+    border-color: var(--green-primary);
+    background: white;
+  }
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  @media (min-width: 700px) {
+    .scenario-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .scenario-card {
+    padding: 14px 10px;
+    background: var(--bg);
+    border: 2px solid transparent;
+    border-radius: 14px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .scenario-card.active {
+    background: var(--green-light);
+    border-color: var(--green-primary);
+  }
+  .scenario-card .sc-icon {
+    width: 38px; height: 38px;
+    border-radius: 12px;
+    background: white;
+    color: var(--green-primary);
+    display: grid; place-items: center;
+    margin: 0 auto 8px;
+  }
+  .scenario-card.active .sc-icon {
+    background: var(--green-primary);
+    color: white;
+  }
+  .scenario-card .sc-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green-forest);
+  }
+
+  .slider-group {
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+  .slider-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .slider-label { font-size: 13px; font-weight: 600; color: var(--green-forest); }
+  .slider-value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--green-primary);
+    background: var(--green-light);
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    background: var(--gray-light);
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px; height: 22px;
+    background: var(--green-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(31,104,69,0.3);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 22px; height: 22px;
+    background: var(--green-primary);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  .sim-result {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    border: 1px solid rgba(16,41,31,0.04);
+    margin-top: 16px;
+    display: none;
+  }
+  .sim-result.visible { display: block; animation: fadeIn 0.4s ease; }
+  .risk-meter {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 14px;
+    margin-bottom: 14px;
+  }
+  .risk-level {
+    width: 60px; height: 60px;
+    border-radius: 16px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .risk-low { background: #DDEEEB; color: #1E5A50; }
+  .risk-medium { background: #FFF3D6; color: #946400; }
+  .risk-high { background: #FBE2DF; color: #A02818; }
+  .risk-info .risk-title {
+    font-size: 12px;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 2px;
+  }
+  .risk-info .risk-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green-forest);
+  }
+  .impact-list { display: flex; flex-direction: column; gap: 8px; }
+  .impact-item {
+    display: flex; gap: 10px;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .impact-item .imp-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: white;
+    color: var(--green-primary);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .sim-disclaimer {
+    margin-top: 16px;
+    padding: 12px;
+    background: #FFF8E1;
+    border-left: 3px solid var(--warning);
+    border-radius: 8px;
+    font-size: 12px;
+    color: #7A5A00;
+    line-height: 1.5;
+    display: flex; gap: 8px;
+  }
+
+  /* ============ MAPA ============ */
+  .map-wrap {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid rgba(16,41,31,0.04);
+    box-shadow: var(--shadow-sm);
+  }
+  #map {
+    height: 420px;
+    width: 100%;
+    background: var(--green-light);
+  }
+  @media (min-width: 900px) {
+    #map { height: 560px; }
+  }
+  .map-legend {
+    padding: 14px 18px;
+    background: var(--white);
+    border-top: 1px solid var(--gray-light);
+    display: flex; flex-wrap: wrap; gap: 14px;
+    font-size: 12px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+  }
+
+  /* ============ NOTIFICAÇÕES ============ */
+  .notif-list { display: flex; flex-direction: column; gap: 10px; }
+  .notif-item {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    gap: 12px;
+    border: 1px solid rgba(16,41,31,0.04);
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  .notif-item.unread {
+    background: linear-gradient(135deg, #F9FBF7, #FFFFFF);
+    border-left: 3px solid var(--green-primary);
+  }
+  .notif-item:active { transform: scale(0.99); }
+  .notif-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+  }
+  .notif-icon.info { background: #DDEEEB; color: #1E5A50; }
+  .notif-icon.warn { background: #FFF3D6; color: #946400; }
+  .notif-icon.danger { background: #FBE2DF; color: #A02818; }
+  .notif-content { flex: 1; min-width: 0; }
+  .notif-head {
+    display: flex; justify-content: space-between; gap: 8px;
+    margin-bottom: 3px;
+  }
+  .notif-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--green-forest);
+  }
+  .notif-time {
+    font-size: 11px;
+    color: var(--gray);
+    flex-shrink: 0;
+  }
+  .notif-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+    margin-bottom: 6px;
+  }
+  .notif-meta {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    font-size: 10px;
+  }
+
+  /* ============ RELATÓRIOS ============ */
+  .report-tabs {
+    display: flex; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .report-tab {
+    flex: 1;
+    padding: 10px;
+    background: var(--white);
+    border: 1.5px solid var(--gray-light);
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray);
+    text-align: center;
+    transition: var(--transition);
+  }
+  .report-tab.active {
+    background: var(--green-primary);
+    color: white;
+    border-color: var(--green-primary);
+  }
+  .report-content {
+    background: var(--white);
+    border-radius: var(--radius-lg);
+    padding: 22px;
+    border: 1px solid rgba(16,41,31,0.04);
+  }
+  .report-section { margin-bottom: 18px; }
+  .report-section h4 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--green-forest);
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--gray-light);
+  }
+  .report-section p { font-size: 13px; line-height: 1.6; color: var(--text); margin-bottom: 6px; }
+  .report-section ul { padding-left: 18px; font-size: 13px; line-height: 1.7; }
+
+  /* ============ MODAL ============ */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(16,41,31,0.5);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.visible { display: flex; }
+  @media (min-width: 700px) {
+    .modal-overlay { align-items: center; }
+  }
+  .modal {
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 520px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 22px;
+    animation: slideUp 0.3s ease;
+  }
+  @media (min-width: 700px) {
+    .modal { border-radius: 24px; }
+  }
+  @keyframes slideUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  .modal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--green-forest);
+  }
+  .modal-close {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--bg);
+    display: grid; place-items: center;
+  }
+
+  /* ============ TOAST ============ */
+  .toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+    width: calc(100% - 32px);
+    max-width: 420px;
+  }
+  .toast {
+    background: var(--green-forest);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    display: flex; align-items: center; gap: 10px;
+    animation: toastIn 0.3s ease;
+    pointer-events: auto;
+  }
+  .toast.success { background: var(--green-primary); }
+  .toast.error { background: var(--danger); }
+  .toast.warning { background: var(--warning); color: var(--green-forest); }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ LOADING ============ */
+  .loader {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--gray-light) 0%, #F0F2EE 50%, var(--gray-light) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ============ UTILS ============ */
+  .hidden { display: none !important; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-20 { margin-top: 20px; }
+  .mb-8 { margin-bottom: 8px; }
+  .mb-12 { margin-bottom: 12px; }
+  .mb-16 { margin-bottom: 16px; }
+  .text-center { text-align: center; }
+  .flex-between { display: flex; justify-content: space-between; align-items: center; }
+  .flex-gap-8 { display: flex; gap: 8px; align-items: center; }
+  .flex-wrap { flex-wrap: wrap; }
+
+  /* Leaflet custom marker */
+  .custom-marker {
+    background: var(--green-primary);
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+  }
+  .custom-marker.alert { background: var(--warning); }
+  .custom-marker.danger { background: var(--danger); }
+
+  .leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+  .leaflet-popup-content { margin: 12px 14px !important; font-size: 13px !important; }
+  .popup-title { font-weight: 700; color: var(--green-forest); margin-bottom: 4px; }
+  .popup-info { color: var(--gray); font-size: 12px; line-height: 1.5; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--gray-light); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gray); }
+
+  /* Print */
+  @media print {
+    .sidebar, .topbar, .bottom-nav, .btn, .modal-overlay { display: none !important; }
+    .main { padding: 0 !important; }
+    .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ SIDEBAR (DESKTOP) ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <i data-lucide="leaf" style="width:22px;height:22px"></i>
+      </div>
+      <div>
+        <div class="brand-name">IAgroritmo</div>
+        <div class="brand-sub">Inteligência Agroclimática</div>
+      </div>
+    </div>
+    <nav>
+      <a class="nav-item active" data-view="home">
+        <i data-lucide="home" style="width:18px;height:18px"></i>
+        Início
+      </a>
+      <a class="nav-item" data-view="clima">
+        <i data-lucide="cloud-sun" style="width:18px;height:18px"></i>
+        Meu Clima
+      </a>
+      <a class="nav-item" data-view="producao">
+        <i data-lucide="sprout" style="width:18px;height:18px"></i>
+        Minha Produção
+      </a>
+      <a class="nav-item" data-view="ia">
+        <i data-lucide="bot" style="width:18px;height:18px"></i>
+        IAgroritmo IA
+      </a>
+      <a class="nav-item" data-view="simulador">
+        <i data-lucide="activity" style="width:18px;height:18px"></i>
+        Simulador El Niño
+      </a>
+      <a class="nav-item" data-view="mapa">
+        <i data-lucide="map" style="width:18px;height:18px"></i>
+        Mapa do Brasil
+      </a>
+      <a class="nav-item" data-view="relatorios">
+        <i data-lucide="file-text" style="width:18px;height:18px"></i>
+        Relatórios
+      </a>
+      <a class="nav-item" data-view="notificacoes" style="position:relative">
+        <i data-lucide="bell" style="width:18px;height:18px"></i>
+        Notificações
+        <span class="badge" id="sidebarBadge">3</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div><strong>UMC — Universidade de Mogi das Cruzes</strong></div>
+      <div>4º UMC Summit · 2026</div>
+      <div>Orientador: Higor Barreto Campos</div>
+      <div style="margin-top:8px;opacity:0.7">Protótipo demonstrativo</div>
+    </div>
+  </aside>
+
+  <!-- ============ TOP BAR (MOBILE) ============ -->
+  <header class="topbar">
+    <div class="brand-mini">
+      <div class="mark">
+        <i data-lucide="leaf"></i>
+      </div>
+      <div>
+        <div class="name">IAgroritmo</div>
+        <div class="sub">Inteligência Agroclimática</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="btnNotifyTop" aria-label="Notificações">
+      <i data-lucide="bell" style="width:20px;height:20px;color:var(--green-forest)"></i>
+      <span class="dot" id="notifyDot"></span>
+    </button>
+  </header>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <!-- ============ VIEW: HOME ============ -->
+    <section class="view active" id="view-home">
+      <div class="view-header">
+        <h1 class="view-title">Bom dia, Produtor</h1>
+        <p class="view-subtitle">Aqui está o panorama da sua região hoje.</p>
+      </div>
+
+      <!-- Greeting -->
+      <div class="greeting">
+        <div class="hello">Olá, bem-vindo de volta 👋</div>
+        <div class="name" id="producerName">Fazenda Boa Esperança</div>
+        <div class="meta">
+          <span><i data-lucide="map-pin" style="width:12px;height:12px"></i> Ribeirão Preto — SP</span>
+          <span><i data-lucide="calendar" style="width:12px;height:12px"></i> <span id="todayDate">02/11/2026</span></span>
+        </div>
+      </div>
+
+      <!-- Weather -->
+      <div class="weather-card card">
+        <div class="weather-top">
+          <div>
+            <div class="weather-temp">28<sup>°C</sup></div>
+            <div class="weather-cond">Parcialmente nublado</div>
+          </div>
+          <i data-lucide="cloud-sun" class="weather-icon"></i>
+        </div>
+        <div class="weather-details">
+          <div class="weather-detail">
+            <div class="wd-label">Chuva</div>
+            <div class="wd-value">12<span class="wd-unit">mm</span></div>
+          </div>
+          <div class="weather-detail">
+            <div class="wd-label">Umidade</div>
+            <div class="wd-value">68<span class="wd-unit">%</span></div>
+          </div>
+          <div class="weather-detail">
+            <div class="wd-label">Vento</div>
+            <div class="wd-value">14<span class="wd-unit">km/h</span></div>
+          </div>
+        </div>
+        <div class="weather-time">Dados atualizados há 25 min · Fonte: demonstrativa</div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert-card mt-16">
+        <div class="alert-icon">
+          <i data-lucide="alert-triangle" style="width:18px;height:18px;color:var(--warning)"></i>
+        </div>
+        <div>
+          <div class="alert-title">Atenção: previsão de chuva abaixo da média</div>
+          <div class="alert-text">Nos próximos 15 dias, a chuva na sua região pode ficar abaixo do esperado. Vale acompanhar a umidade do solo.</div>
+          <div class="mt-8">
+            <span class="chip warning">Atenção</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Production -->
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="icon-wrap"><i data-lucide="sprout" style="width:18px;height:18px"></i></div>
+          <h3>Minha Produção</h3>
+          <span class="hint">Toque para ver detalhes</span>
+        </div>
+        <div class="grid grid-3">
+          <div class="activity-card" data-activity="soja">
+            <div class="activity-icon soja">
+              <i data-lucide="bean" style="width:22px;height:22px"></i>
+            </div>
+            <div class="activity-info">
+              <div class="activity-name">Soja</div>
+              <div class="activity-status"><span class="status-dot status-warn"></span>Atenção hídrica</div>
+            </div>
+            <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--gray)"></i>
+          </div>
+          <div class="activity-card" data-activity="milho">
+            <div class="activity-icon milho">
+              <i data-lucide="wheat" style="width:22px;height:22px"></i>
+            </div>
+            <div class="activity-info">
+              <div class="activity-name">Milho</div>
+              <div class="activity-status"><span class="status-dot status-ok"></span>Condição estável</div>
+            </div>
+            <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--gray)"></i>
+          </div>
+          <div class="activity-card" data-activity="pecuaria">
+            <div class="activity-icon pecuaria">
+              <i data-lucide="beef" style="width:22px;height:22px"></i>
+            </div>
+            <div class="activity-info">
+              <div class="activity-name">Pecuária</div>
+              <div class="activity-status"><span class="status-dot status-ok"></span>Rebanho estável</div>
+            </div>
+            <i data-lucide="chevron-right" style="width:18px;height:18px;color:var(--gray)"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI -->
+      <div class="ai-card mt-16">
+        <div class="ai-head">
+          <div class="ai-avatar">
+            <i data-lucide="sparkles" style="width:20px;height:20px;color:white"></i>
+          </div>
+          <div>
+            <div class="ai-title">IAgroritmo IA</div>
+            <div class="ai-sub">Seu assistente agroclimático</div>
+          </div>
+        </div>
+        <div class="ai-summary">
+          "Com base nos dados da sua região, o cenário atual pede atenção com a soja nas próximas semanas. A umidade do solo está abaixo do ideal para a fase de floração."
+        </div>
+        <button class="btn btn-block" onclick="navigate('ia')">
+          <i data-lucide="message-circle" style="width:16px;height:16px"></i>
+          Consultar meu assistente
+        </button>
+      </div>
+
+      <!-- Simulator CTA -->
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="icon-wrap"><i data-lucide="activity" style="width:18px;height:18px"></i></div>
+          <h3>Simulador El Niño</h3>
+        </div>
+        <p style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.5">
+          Veja como diferentes cenários climáticos podem afetar sua produção.
+        </p>
+        <button class="btn btn-primary btn-block" onclick="navigate('simulador')">
+          <i data-lucide="play" style="width:16px;height:16px"></i>
+          Simular impacto do El Niño
+        </button>
+      </div>
+
+      <div class="info-box mt-16">
+        <i data-lucide="info" style="width:16px;height:16px"></i>
+        <div>
+          <strong>Modo demonstrativo.</strong> Os dados exibidos são ilustrativos e servem para apresentar o funcionamento da plataforma. Em produção, serão integradas fontes oficiais como INMET, INPE/CPTEC, NOAA, IBGE e CONAB.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: CLIMA ============ -->
+    <section class="view" id="view-clima">
+      <div class="view-header">
+        <h1 class="view-title">Meu Clima</h1>
+        <p class="view-subtitle">Acompanhe as condições climáticas da sua região.</p>
+      </div>
+
+      <div class="filter-bar" id="climateFilters">
+        <button class="filter-chip active" data-region="sudeste">Sudeste</button>
+        <button class="filter-chip" data-region="sul">Sul</button>
+        <button class="filter-chip" data-region="centro-oeste">Centro-Oeste</button>
+        <button class="filter-chip" data-region="nordeste">Nordeste</button>
+        <button class="filter-chip" data-region="norte">Norte</button>
+      </div>
+
+      <div class="grid grid-2 mb-16">
+        <div class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Temperatura</span>
+            <div class="metric-icon"><i data-lucide="thermometer" style="width:14px;height:14px"></i></div>
+          </div>
+          <div><span class="metric-value" id="climaTemp">28</span><span class="metric-unit">°C</span></div>
+          <div class="metric-trend trend-up">
+            <i data-lucide="trending-up" style="width:10px;height:10px"></i> +1,2° vs. média
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Precipitação</span>
+            <div class="metric-icon"><i data-lucide="cloud-rain" style="width:14px;height:14px"></i></div>
+          </div>
+          <div><span class="metric-value" id="climaPrec">12</span><span class="metric-unit">mm</span></div>
+          <div class="metric-trend trend-down">
+            <i data-lucide="trending-down" style="width:10px;height:10px"></i> -18% vs. média
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Umidade Relativa</span>
+            <div class="metric-icon"><i data-lucide="droplets" style="width:14px;height:14px"></i></div>
+          </div>
+          <div><span class="metric-value" id="climaUmid">68</span><span class="metric-unit">%</span></div>
+          <div class="metric-trend trend-flat">
+            <i data-lucide="minus" style="width:10px;height:10px"></i> Dentro do esperado
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-head">
+            <span class="metric-label">Disponibilidade Hídrica</span>
+            <div class="metric-icon"><i data-lucide="waves" style="width:14px;height:14px"></i></div>
+          </div>
+          <div><span class="metric-value" id="climaHidrico">Moderada</span></div>
+          <div class="metric-trend trend-down">
+            <i data-lucide="trending-down" style="width:10px;height:10px"></i> Abaixo do normal
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-wrap mb-16">
+        <div class="chart-head">
+          <div>
+            <div class="chart-title">Evolução da temperatura</div>
+            <div class="chart-subtitle">Últimos 7 dias · Dados demonstrativos</div>
+          </div>
+          <span class="chip info">°C</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartTemp"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-wrap mb-16">
+        <div class="chart-head">
+          <div>
+            <div class="chart-title">Precipitação acumulada</div>
+            <div class="chart-subtitle">Comparação com a média histórica</div>
+          </div>
+          <span class="chip">mm</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="chartPrec"></canvas>
+        </div>
+      </div>
+
+      <div class="info-box mb-16">
+        <i data-lucide="lightbulb" style="width:16px;height:16px"></i>
+        <div>
+          <strong>O que isso significa?</strong> Quando a chuva fica abaixo da média por várias semanas, o solo perde umidade e as plantas podem sofrer estresse hídrico. É um sinal para acompanhar de perto a sua lavoura ou pastagem.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="icon-wrap"><i data-lucide="alert-circle" style="width:18px;height:18px"></i></div>
+          <h3>Anomalias e eventos recentes</h3>
+        </div>
+        <div class="variable-list">
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="cloud-off" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Chuvas abaixo da média</div>
+              <div class="var-desc">Está chovendo menos do que o esperado para este período.</div>
+            </div>
+            <span class="chip warning">Atenção</span>
+          </div>
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="sun" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Temperatura acima da média</div>
+              <div class="var-desc">Dias mais quentes que o normal para a época.</div>
+            </div>
+            <span class="chip warning">Atenção</span>
+          </div>
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="wind" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Ventos dentro do normal</div>
+              <div class="var-desc">Sem eventos significativos registrados.</div>
+            </div>
+            <span class="chip">Normal</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: PRODUÇÃO ============ -->
+    <section class="view" id="view-producao">
+      <div class="view-header">
+        <h1 class="view-title">Minha Produção</h1>
+        <p class="view-subtitle">Informações sobre sua atividade produtiva.</p>
+      </div>
+
+      <div class="activity-tabs">
+        <button class="activity-tab active" data-activity="soja">
+          <i data-lucide="bean" style="width:20px;height:20px"></i>
+          Soja
+        </button>
+        <button class="activity-tab" data-activity="milho">
+          <i data-lucide="wheat" style="width:20px;height:20px"></i>
+          Milho
+        </button>
+        <button class="activity-tab" data-activity="pecuaria">
+          <i data-lucide="beef" style="width:20px;height:20px"></i>
+          Pecuária
+        </button>
+      </div>
+
+      <div id="productionContent"></div>
+    </section>
+
+    <!-- ============ VIEW: IA ============ -->
+    <section class="view" id="view-ia">
+      <div class="view-header">
+        <h1 class="view-title">IAgroritmo IA</h1>
+        <p class="view-subtitle">Seu assistente de inteligência agroclimática.</p>
+      </div>
+
+      <div class="ai-chat">
+        <div class="ai-chat-header">
+          <div class="ai-avatar-lg">
+            <i data-lucide="sparkles" style="width:22px;height:22px;color:white"></i>
+          </div>
+          <div>
+            <div class="ai-name">IAgroritmo IA</div>
+            <div class="ai-status">Online · Modo demonstrativo</div>
+          </div>
+        </div>
+        <div class="ai-messages" id="aiMessages"></div>
+        <div class="ai-quick" id="aiQuick">
+          <button class="ai-quick-btn" data-q="Como o El Niño pode afetar minha soja?">Como o El Niño afeta minha soja?</button>
+          <button class="ai-quick-btn" data-q="Existe algum risco para minha produção?">Risco para minha produção?</button>
+          <button class="ai-quick-btn" data-q="Como a falta de chuva afeta minhas pastagens?">Falta de chuva e pastagens</button>
+          <button class="ai-quick-btn" data-q="O que significa esse alerta?">O que significa o alerta?</button>
+          <button class="ai-quick-btn" data-q="Como posso me preparar?">Como me preparar?</button>
+        </div>
+        <div class="ai-input-bar">
+          <input type="text" class="ai-input" id="aiInput" placeholder="Pergunte ao assistente..." />
+          <button class="ai-send" id="aiSend" aria-label="Enviar">
+            <i data-lucide="send" style="width:18px;height:18px"></i>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: SIMULADOR ============ -->
+    <section class="view" id="view-simulador">
+      <div class="view-header">
+        <h1 class="view-title">Simulador El Niño</h1>
+        <p class="view-subtitle">Explore cenários climáticos e seus possíveis impactos.</p>
+      </div>
+
+      <div class="sim-config">
+        <div class="form-group">
+          <label class="form-label">Estado</label>
+          <select class="form-select" id="simState">
+            <option value="SP">São Paulo</option>
+            <option value="MG">Minas Gerais</option>
+            <option value="MT">Mato Grosso</option>
+            <option value="GO">Goiás</option>
+            <option value="MS">Mato Grosso do Sul</option>
+            <option value="PR">Paraná</option>
+            <option value="RS">Rio Grande do Sul</option>
+            <option value="BA">Bahia</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Atividade produtiva</label>
+          <select class="form-select" id="simActivity">
+            <option value="soja">Soja</option>
+            <option value="milho">Milho</option>
+            <option value="pecuaria">Pecuária</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Cenário climático</label>
+          <div class="scenario-grid" id="scenarioGrid">
+            <div class="scenario-card active" data-scenario="referencia">
+              <div class="sc-icon"><i data-lucide="thermometer" style="width:18px;height:18px"></i></div>
+              <div class="sc-name">Referência</div>
+            </div>
+            <div class="scenario-card" data-scenario="elnino">
+              <div class="sc-icon"><i data-lucide="flame" style="width:18px;height:18px"></i></div>
+              <div class="sc-name">El Niño</div>
+            </div>
+            <div class="scenario-card" data-scenario="lanina">
+              <div class="sc-icon"><i data-lucide="snowflake" style="width:18px;height:18px"></i></div>
+              <div class="sc-name">La Niña</div>
+            </div>
+            <div class="scenario-card" data-scenario="personalizado">
+              <div class="sc-icon"><i data-lucide="settings-2" style="width:18px;height:18px"></i></div>
+              <div class="sc-name">Personalizado</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="customParams" class="hidden">
+          <div class="slider-group">
+            <div class="slider-head">
+              <span class="slider-label">Variação de precipitação</span>
+              <span class="slider-value" id="sliderPrecVal">0%</span>
+            </div>
+            <input type="range" id="sliderPrec" min="-50" max="50" value="0" step="5" />
+          </div>
+          <div class="slider-group">
+            <div class="slider-head">
+              <span class="slider-label">Variação de temperatura</span>
+              <span class="slider-value" id="sliderTempVal">0°C</span>
+            </div>
+            <input type="range" id="sliderTemp" min="-3" max="5" value="0" step="0.5" />
+          </div>
+          <div class="slider-group">
+            <div class="slider-head">
+              <span class="slider-label">Intensidade do cenário</span>
+              <span class="slider-value" id="sliderIntVal">Média</span>
+            </div>
+            <input type="range" id="sliderInt" min="1" max="3" value="2" step="1" />
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg mt-16" id="btnRunSim">
+          <i data-lucide="play" style="width:16px;height:16px"></i>
+          Executar Simulação
+        </button>
+      </div>
+
+      <div class="sim-result" id="simResult">
+        <div class="flex-between mb-16">
+          <div>
+            <div class="label">Cenário</div>
+            <div style="font-size:18px;font-weight:700;color:var(--green-forest)" id="resScenario">El Niño — Ilustrativo</div>
+          </div>
+          <span class="chip info" id="resRegion">SP · Soja</span>
+        </div>
+
+        <div class="risk-meter">
+          <div class="risk-level risk-medium" id="resRiskLevel">
+            <i data-lucide="alert-triangle" style="width:28px;height:28px"></i>
+          </div>
+          <div class="risk-info">
+            <div class="risk-title">Nível de risco demonstrativo</div>
+            <div class="risk-value" id="resRiskText">Moderado</div>
+          </div>
+        </div>
+
+        <div class="chart-wrap mb-16">
+          <div class="chart-head">
+            <div>
+              <div class="chart-title">Comparativo de indicadores</div>
+              <div class="chart-subtitle">Cenário selecionado vs. referência</div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartSim"></canvas>
+          </div>
+        </div>
+
+        <div class="label mb-8">Possíveis impactos</div>
+        <div class="impact-list" id="resImpacts"></div>
+
+        <div class="label mt-16 mb-8">Estratégias a considerar</div>
+        <div class="impact-list" id="resStrategies"></div>
+
+        <div class="sim-disclaimer">
+          <i data-lucide="alert-circle" style="width:16px;height:16px;flex-shrink:0;margin-top:1px"></i>
+          <div>
+            <strong>Simulação demonstrativa.</strong> Os resultados não representam previsões meteorológicas nem estimativas validadas de produtividade. Trata-se de um exercício ilustrativo para apoio à tomada de decisão.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: MAPA ============ -->
+    <section class="view" id="view-mapa">
+      <div class="view-header">
+        <h1 class="view-title">Mapa do Brasil</h1>
+        <p class="view-subtitle">Visualize regiões e indicadores agroclimáticos.</p>
+      </div>
+
+      <div class="map-wrap">
+        <div id="map"></div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--green-primary)"></span> Condição estável</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--warning)"></span> Atenção</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--danger)"></span> Alerta</div>
+        </div>
+      </div>
+
+      <div class="info-box mt-16">
+        <i data-lucide="info" style="width:16px;height:16px"></i>
+        <div>
+          <strong>Limitação do protótipo.</strong> O mapa exibe pontos de referência em regiões agrícolas. Em produção, serão integradas camadas oficiais de INMET, INPE/CPTEC e IBGE.
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: RELATÓRIOS ============ -->
+    <section class="view" id="view-relatorios">
+      <div class="view-header">
+        <h1 class="view-title">Relatórios</h1>
+        <p class="view-subtitle">Resumos e análises para sua propriedade.</p>
+      </div>
+
+      <div class="report-tabs">
+        <button class="report-tab active" data-report="produtor">Para o produtor</button>
+        <button class="report-tab" data-report="tecnico">Técnico</button>
+      </div>
+
+      <div id="reportContent"></div>
+
+      <div class="mt-16 flex-gap-8">
+        <button class="btn btn-primary" id="btnExportPDF" style="flex:1">
+          <i data-lucide="download" style="width:16px;height:16px"></i>
+          Exportar PDF
+        </button>
+        <button class="btn btn-outline" id="btnPrint" style="flex:1">
+          <i data-lucide="printer" style="width:16px;height:16px"></i>
+          Imprimir
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ VIEW: NOTIFICAÇÕES ============ -->
+    <section class="view" id="view-notificacoes">
+      <div class="view-header">
+        <div class="flex-between">
+          <div>
+            <h1 class="view-title">Notificações</h1>
+            <p class="view-subtitle">Alertas e atualizações da sua região.</p>
+          </div>
+          <button class="btn btn-outline" id="btnMarkAllRead" style="padding:8px 14px;min-height:38px;font-size:12px">
+            Marcar todas como lidas
+          </button>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="notifFilters">
+        <button class="filter-chip active" data-filter="all">Todas</button>
+        <button class="filter-chip" data-filter="info">Informativas</button>
+        <button class="filter-chip" data-filter="warn">Atenção</button>
+        <button class="filter-chip" data-filter="danger">Alertas</button>
+      </div>
+
+      <div class="notif-list" id="notifList"></div>
+
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="icon-wrap"><i data-lucide="settings" style="width:18px;height:18px"></i></div>
+          <h3>Preferências de alerta</h3>
+        </div>
+        <div class="variable-list">
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="cloud-rain" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Alertas de precipitação</div>
+              <div class="var-desc">Avisos sobre chuva acima ou abaixo da média.</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" checked style="opacity:0;width:0;height:0" class="pref-toggle" data-pref="prec">
+              <span style="position:absolute;inset:0;background:var(--green-primary);border-radius:12px;cursor:pointer;transition:var(--transition)"></span>
+              <span style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:var(--transition)" class="toggle-dot"></span>
+            </label>
+          </div>
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="thermometer" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Alertas de temperatura</div>
+              <div class="var-desc">Variações térmicas relevantes.</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" checked style="opacity:0;width:0;height:0" class="pref-toggle" data-pref="temp">
+              <span style="position:absolute;inset:0;background:var(--green-primary);border-radius:12px;cursor:pointer;transition:var(--transition)"></span>
+              <span style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:var(--transition)" class="toggle-dot"></span>
+            </label>
+          </div>
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="activity" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">Cenários El Niño / La Niña</div>
+              <div class="var-desc">Atualizações sobre fenômenos climáticos.</div>
+            </div>
+            <label style="position:relative;display:inline-block;width:44px;height:24px">
+              <input type="checkbox" checked style="opacity:0;width:0;height:0" class="pref-toggle" data-pref="elnino">
+              <span style="position:absolute;inset:0;background:var(--green-primary);border-radius:12px;cursor:pointer;transition:var(--transition)"></span>
+              <span style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:white;border-radius:50%;transition:var(--transition)" class="toggle-dot"></span>
+            </label>
+          </div>
+        </div>
+        <div class="info-box mt-16">
+          <i data-lucide="info" style="width:16px;height:16px"></i>
+          <div>
+            <strong>Notificações em segundo plano</strong> exigem backend e infraestrutura adicional, não disponíveis neste protótipo isolado. Podemos solicitar permissão para notificações do navegador enquanto a página estiver aberta.
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-block mt-12" id="btnEnableNotif">
+          <i data-lucide="bell" style="width:16px;height:16px"></i>
+          Ativar notificações do navegador
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ BOTTOM NAV (MOBILE) ============ -->
+  <nav class="bottom-nav">
+    <button class="bn-item active" data-view="home">
+      <i data-lucide="home" style="width:20px;height:20px"></i>
+      Início
+    </button>
+    <button class="bn-item" data-view="clima">
+      <i data-lucide="cloud-sun" style="width:20px;height:20px"></i>
+      Clima
+    </button>
+    <button class="bn-item" data-view="producao">
+      <i data-lucide="sprout" style="width:20px;height:20px"></i>
+      Produção
+    </button>
+    <button class="bn-item" data-view="ia">
+      <i data-lucide="bot" style="width:20px;height:20px"></i>
+      IA
+    </button>
+    <button class="bn-item" data-view="simulador">
+      <i data-lucide="activity" style="width:20px;height:20px"></i>
+      Simulador
+      <span class="bn-dot"></span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ============ TOAST ============ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* =========================================================
+   IAgroritmo — Lógica da aplicação
+   ========================================================= */
+
+/* ---------- Estado global ---------- */
+const state = {
+  currentView: 'home',
+  currentActivity: 'soja',
+  currentRegion: 'sudeste',
+  currentScenario: 'referencia',
+  currentReport: 'produtor',
+  notifFilter: 'all',
+  notifications: [],
+  charts: {},
+  map: null,
+  mapMarkers: [],
+};
+
+/* ---------- Dados demonstrativos ---------- */
+const DATA = {
+  regions: {
+    'sudeste': { name: 'Sudeste', temp: 28, prec: 12, umid: 68, hidrico: 'Moderada' },
+    'sul': { name: 'Sul', temp: 24, prec: 28, umid: 75, hidrico: 'Boa' },
+    'centro-oeste': { name: 'Centro-Oeste', temp: 30, prec: 8, umid: 58, hidrico: 'Baixa' },
+    'nordeste': { name: 'Nordeste', temp: 31, prec: 18, umid: 72, hidrico: 'Moderada' },
+    'norte': { name: 'Norte', temp: 29, prec: 45, umid: 82, hidrico: 'Alta' },
+  },
+  activities: {
+    soja: {
+      name: 'Soja',
+      icon: 'bean',
+      description: 'Cultura de grãos com ciclo entre 100 e140 dias, sensível à distribuição de chuvas.',
+      phases: ['Germinação', 'Vegetativo', 'Floração', 'Enchimento', 'Maturação'],
+      currentPhase: 2,
+      water: 'Alta necessidade hídrica, especialmente na floração e enchimento de grãos.',
+      temp: 'Temperatura ideal entre 20°C e 30°C. Acima de 35°C pode haver abortamento de flores.',
+      impacts: [
+        'Veranicos prolongados podem reduzir a produtividade.',
+        'Excesso de chuva na colheita favorece doenças de final de ciclo.',
+        'Temperaturas elevadas aceleram o ciclo e reduzem o enchimento de grãos.'
+      ],
+      variables: [
+        { name: 'Umidade do solo', desc: 'Quantidade de água disponível para as raízes.', icon: 'droplets' },
+        { name: 'Distribuição de chuvas', desc: 'Como a chuva se espalha ao longo do ciclo.', icon: 'cloud-rain' },
+        { name: 'Temperatura do ar', desc: 'Influencia o desenvolvimento da planta.', icon: 'thermometer' },
+        { name: 'Radiação solar', desc: 'Energia disponível para a fotossíntese.', icon: 'sun' },
+      ]
+    },
+    milho: {
+      name: 'Milho',
+      icon: 'wheat',
+      description: 'Cultura sensível ao déficit hídrico, especialmente na floração.',
+      phases: ['Emergência', 'Vegetativo', 'Pendoamento', 'Floração', 'Grãos'],
+      currentPhase: 3,
+      water: 'Alta demanda hídrica no pendoamento e floração.',
+      temp: 'Temperatura ideal entre 22°C e 30°C. Estresse térmico na floração reduz a polinização.',
+      impacts: [
+        'Falta de água na floração reduz a formação de grãos.',
+        'Temperaturas muito altas prejudicam o florescimento.',
+        'Chuvas intensas na colheita podem comprometer a qualidade.'
+      ],
+      variables: [
+        { name: 'Disponibilidade hídrica', desc: 'Crítica na fase reprodutiva.', icon: 'waves' },
+        { name: 'Temperatura noturna', desc: 'Noites muito quentes aumentam o estresse.', icon: 'moon' },
+        { name: 'Ventos fortes', desc: 'Podem causar acamamento da lavoura.', icon: 'wind' },
+      ]
+    },
+    pecuaria: {
+      name: 'Pecuária',
+      icon: 'beef',
+      description: 'Atividade dependente das condições de pastagem e bem-estar animal.',
+      phases: ['Águas', 'Transição', 'Seca', 'Transição', 'Águas'],
+      currentPhase: 0,
+      water: 'Pastagens dependem diretamente do regime de chuvas.',
+      temp: 'Temperaturas elevadas podem causar estresse térmico no rebanho.',
+      impacts: [
+        'Seca prolongada reduz a qualidade e quantidade de pastagem.',
+        'Calor excessivo diminui o ganho de peso e a produção de leite.',
+        'Falta de água afeta diretamente o bem-estar dos animais.'
+      ],
+      variables: [
+        { name: 'Condição das pastagens', desc: 'Disponibilidade de alimento para o rebanho.', icon: 'sprout' },
+        { name: 'Disponibilidade de água', desc: 'Acesso a bebedouros e fontes.', icon: 'droplets' },
+        { name: 'Índice de calor', desc: 'Combinação de temperatura e umidade.', icon: 'thermometer' },
+        { name: 'Sombreamento', desc: 'Proteção contra radiação direta.', icon: 'trees' },
+      ]
+    }
+  },
+  scenarios: {
+    referencia: {
+      name: 'Condição de referência',
+      desc: 'Condições climáticas próximas à média histórica.',
+      prec: 0, temp: 0, intensity: 1,
+      risk: 'low', riskText: 'Baixo',
+      impacts: [
+        'Condições próximas à média histórica para a região.',
+        'Atividades produtivas seguem o comportamento esperado.',
+      ],
+      strategies: [
+        'Manejo convencional conforme o calendário agrícola.',
+        'Monitoramento rotineiro das variáveis climáticas.',
+      ]
+    },
+    elnino: {
+      name: 'El Niño — Ilustrativo',
+      desc: 'Cenário ilustrativo de aquecimento do Pacífico equatorial.',
+      prec: -25, temp: 1.5, intensity: 2,
+      risk: 'medium', riskText: 'Moderado',
+      impacts: [
+        'Redução ilustrativa de chuvas em partes do Centro-Oeste e Nordeste.',
+        'Aumento de temperatura acima da média em várias regiões.',
+        'Possível estresse hídrico para soja e milho em fases críticas.',
+        'Pastagens podem perder qualidade mais rapidamente.',
+      ],
+      strategies: [
+        'Acompanhar de perto a umidade do solo.',
+        'Considerar ajustes no calendário de plantio.',
+        'Avaliar reserva estratégica de água para o rebanho.',
+        'Monitorar sinais de estresse térmico nos animais.',
+      ]
+    },
+    lanina: {
+      name: 'La Niña — Ilustrativo',
+      desc: 'Cenário ilustrativo de resfriamento do Pacífico equatorial.',
+      prec: 15, temp: -0.8, intensity: 2,
+      risk: 'medium', riskText: 'Moderado',
+      impacts: [
+        'Aumento ilustrativo de chuvas no Sul do país.',
+        'Possível redução de chuvas em partes do Nordeste.',
+        'Risco de excesso de umidade em algumas regiões.',
+        'Temperaturas ligeiramente abaixo da média.',
+      ],
+      strategies: [
+        'Atenção a doenças favorecidas por umidade elevada.',
+        'Avaliar drenagem das áreas cultivadas.',
+        'Ajustar épocas de plantio conforme a região.',
+      ]
+    },
+    personalizado: {
+      name: 'Cenário personalizado',
+      desc: 'Parâmetros definidos pelo usuário.',
+      prec: 0, temp: 0, intensity: 2,
+      risk: 'medium', riskText: 'Moderado',
+      impacts: [],
+      strategies: []
+    }
+  },
+  mapPoints: [
+    { city: 'Ribeirão Preto', state: 'SP', lat: -21.17, lng: -47.81, status: 'warn', activity: 'Soja / Pecuária', info: 'Atenção hídrica — chuvas abaixo da média.' },
+    { city: 'Uberlândia', state: 'MG', lat: -18.91, lng: -48.27, status: 'warn', activity: 'Soja / Milho', info: 'Temperaturas acima da média.' },
+    { city: 'Sorocaba', state: 'SP', lat: -23.50, lng: -47.45, status: 'ok', activity: 'Diversas', info: 'Condição estável.' },
+    { city: 'Cuiabá', state: 'MT', lat: -15.60, lng: -56.09, status: 'danger', activity: 'Soja / Milho', info: 'Disponibilidade hídrica baixa.' },
+    { city: 'Goiania', state: 'GO', lat: -16.68, lng: -49.25, status: 'warn', activity: 'Soja / Pecuária', info: 'Veranico previsto.' },
+    { city: 'Dourados', state: 'MS', lat: -22.22, lng: -54.81, status: 'ok', activity: 'Soja / Milho', info: 'Condição dentro do esperado.' },
+    { city: 'Cascavel', state: 'PR', lat: -25.05, lng: -53.45, status: 'warn', activity: 'Milho / Soja', info: 'Excesso de chuvas recente.' },
+    { city: 'Passo Fundo', state: 'RS', lat: -28.26, lng: -52.40, status: 'warn', activity: 'Milho / Soja', info: 'Umidade elevada.' },
+    { city: 'Barreiras', state: 'BA', lat: -12.15, lng: -44.99, status: 'warn', activity: 'Soja / Algodão', info: 'Chuvas irregulares.' },
+    { city: 'Luís Eduardo Magalhães', state: 'BA', lat: -12.09, lng: -45.78, status: 'warn', activity: 'Soja / Milho', info: 'Atenção à distribuição de chuvas.' },
+    { city: 'Sorriso', state: 'MT', lat: -11.85, lng: -55.72, status: 'danger', activity: 'Soja / Milho', info: 'Estresse hídrico observado.' },
+    { city: 'Patos de Minas', state: 'MG', lat: -18.57, lng: -46.52, status: 'ok', activity: 'Milho / Pecuária', info: 'Condição estável.' },
+  ],
+  notifications: [
+    {
+      id: 1, type: 'warn', title: 'Previsão de chuva abaixo da média',
+      text: 'Nos próximos 15 dias, a chuva na sua região pode ficar abaixo do esperado. Acompanhe a umidade do solo.',
+      time: 'Há 25 min', region: 'Ribeirão Preto — SP', activity: 'Soja', source: 'Demonstrativo',
+      implication: 'Possível estresse hídrico na floração.', read: false
+    },
+    {
+      id: 2, type: 'info', title: 'Atualização do cenário El Niño',
+      text: 'Novos indicadores sugerem manutenção do cenário El Niño moderado para os próximos meses.',
+      time: 'Há 2 h', region: 'Brasil', activity: 'Geral', source: 'Demonstrativo',
+      implication: 'Monitoramento contínuo recomendado.', read: false
+    },
+    {
+      id: 3, type: 'danger', title: 'Alerta de temperatura elevada',
+      text: 'Temperaturas acima de 33°C previstas para os próximos 3 dias. Atenção ao bem-estar do rebanho.',
+      time: 'Há 5 h', region: 'Ribeirão Preto — SP', activity: 'Pecuária', source: 'Demonstrativo',
+      implication: 'Risco de estresse térmico.', read: false
+    },
+    {
+      id: 4, type: 'info', title: 'Nova análise disponível',
+      text: 'Uma nova análise agroclimática da sua região foi gerada. Consulte no módulo de relatórios.',
+      time: 'Ontem', region: 'Ribeirão Preto — SP', activity: 'Geral', source: 'IAgroritmo IA',
+      implication: 'Informação complementar.', read: true
+    },
+    {
+      id: 5, type: 'warn', title: 'Condição das pastagens',
+      text: 'A qualidade das pastagens na sua região pode cair nas próximas semanas devido à redução de chuvas.',
+      time: '2 dias atrás', region: 'Ribeirão Preto — SP', activity: 'Pecuária', source: 'Demonstrativo',
+      implication: 'Avaliar suplementação estratégica.', read: true
+    }
+  ]
+};
+
+/* ---------- Navegação ---------- */
+function navigate(view) {
+  state.currentView = view;
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const target = document.getElementById('view-' + view);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.sidebar .nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+  document.querySelectorAll('.bottom-nav .bn-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (view === 'clima') setTimeout(initClimateCharts, 100);
+  if (view === 'mapa') setTimeout(initMap, 100);
+  if (view === 'notificacoes') renderNotifications();
+  if (view === 'producao') renderProduction();
+  if (view === 'relatorios') renderReport();
+  if (view === 'ia') setTimeout(() => {
+    const msgs = document.getElementById('aiMessages');
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 100);
+}
+
+document.querySelectorAll('[data-view]').forEach(el => {
+  el.addEventListener('click', () => navigate(el.dataset.view));
+});
+
+/* ---------- Toast ---------- */
+function toast(message, type = 'success') {
+  const container = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'alert-circle';
+  t.innerHTML = `<i data-lucide="${icon}" style="width:16px;height:16px"></i> ${message}`;
+  container.appendChild(t);
+  if (window.lucide) lucide.createIcons();
+  setTimeout(() => {
+    t.style.animation = 'fadeIn 0.2s ease reverse';
+    setTimeout(() => t.remove(), 200);
+  }, 3000);
+}
+
+/* ---------- Modal ---------- */
+function openModal(html) {
+  const overlay = document.getElementById('modalOverlay');
+  const content = document.getElementById('modalContent');
+  content.innerHTML = html;
+  overlay.classList.add('visible');
+  if (window.lucide) lucide.createIcons();
+}
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('visible');
+}
+document.getElementById('modalOverlay').addEventListener('click', (e) => {
+  if (e.target.id === 'modalOverlay') closeModal();
+});
+
+/* ---------- Notificações ---------- */
+function renderNotifications() {
+  const list = document.getElementById('notifList');
+  const filter = state.notifFilter;
+  const filtered = filter === 'all' ? DATA.notifications : DATA.notifications.filter(n => n.type === filter);
+
+  list.innerHTML = filtered.map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" data-id="${n.id}">
+      <div class="notif-icon ${n.type === 'danger' ? 'danger' : n.type === 'warn' ? 'warn' : 'info'}">
+        <i data-lucide="${n.type === 'danger' ? 'alert-octagon' : n.type === 'warn' ? 'alert-triangle' : 'info'}" style="width:18px;height:18px"></i>
+      </div>
+      <div class="notif-content">
+        <div class="notif-head">
+          <div class="notif-title">${n.title}</div>
+          <div class="notif-time">${n.time}</div>
+        </div>
+        <div class="notif-text">${n.text}</div>
+        <div class="notif-meta">
+          <span class="chip info">${n.region}</span>
+          <span class="chip">${n.activity}</span>
+          <span class="chip" style="background:var(--gray-light);color:var(--gray)">${n.source}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  if (window.lucide) lucide.createIcons();
+
+  list.querySelectorAll('.notif-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const id = parseInt(item.dataset.id);
+      const notif = DATA.notifications.find(n => n.id === id);
+      if (notif) {
+        notif.read = true;
+        updateNotifBadge();
+        openNotifDetail(notif);
+      }
+    });
+  });
+}
+
+function openNotifDetail(n) {
+  openModal(`
+    <div class="modal-head">
+      <div class="modal-title">${n.title}</div>
+      <button class="modal-close" onclick="closeModal()"><i data-lucide="x" style="width:18px;height:18px"></i></button>
+    </div>
+    <div style="font-size:13px;color:var(--gray);margin-bottom:14px">${n.time} · ${n.region}</div>
+    <p style="font-size:14px;line-height:1.6;margin-bottom:14px">${n.text}</p>
+    <div class="divider"></div>
+    <div class="label">Atividade relacionada</div>
+    <div style="margin-bottom:12px"><span class="chip">${n.activity}</span></div>
+    <div class="label">Possível implicação</div>
+    <div style="margin-bottom:12px;font-size:13px;line-height:1.5">${n.implication}</div>
+    <div class="label">Origem</div>
+    <div style="font-size:13px;color:var(--gray)">${n.source}</div>
+    <div class="info-box mt-16">
+      <i data-lucide="info" style="width:16px;height:16px"></i>
+      <div>Informação demonstrativa. Em produção, esta notificação viria de fontes oficiais integradas.</div>
+    </div>
+  `);
+  renderNotifications();
+}
+
+function updateNotifBadge() {
+  const unread = DATA.notifications.filter(n => !n.read).length;
+  const sidebarBadge = document.getElementById('sidebarBadge');
+  const notifyDot = document.getElementById('notifyDot');
+  if (sidebarBadge) {
+    sidebarBadge.textContent = unread;
+    sidebarBadge.style.display = unread > 0 ? 'inline-block' : 'none';
+  }
+  if (notifyDot) notifyDot.style.display = unread > 0 ? 'block' : 'none';
+  document.querySelectorAll('.bottom-nav .bn-item[data-view="simulador"] .bn-dot').forEach(d => {
+    // keep visible as feature highlight
+  });
+}
+
+document.getElementById('btnNotifyTop').addEventListener('click', () => navigate('notificacoes'));
+document.getElementById('btnMarkAllRead').addEventListener('click', () => {
+  DATA.notifications.forEach(n => n.read = true);
+  updateNotifBadge();
+  renderNotifications();
+  toast('Todas marcadas como lidas');
+});
+
+document.getElementById('notifFilters').addEventListener('click', (e) => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('#notifFilters .filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.notifFilter = chip.dataset.filter;
+  renderNotifications();
+});
+
+document.getElementById('btnEnableNotif').addEventListener('click', async () => {
+  if (!('Notification' in window)) {
+    toast('Seu navegador não suporta notificações', 'error');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    toast('Notificações ativadas', 'success');
+    try {
+      new Notification('IAgroritmo', {
+        body: 'Você receberá alertas enquanto esta página estiver aberta.',
+        icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%231F6845"><path d="M12 2C8 6 6 10 6 14a6 6 0 0012 0c0-4-2-8-6-12z"/></svg>'
+      });
+    } catch(e) {}
+  } else {
+    toast('Permissão negada', 'warning');
+  }
+});
+
+/* ---------- Toggle switches ---------- */
+document.querySelectorAll('.pref-toggle').forEach(t => {
+  const update = () => {
+    const span = t.nextElementSibling;
+    const dot = span.nextElementSibling;
+    if (t.checked) {
+      span.style.background = 'var(--green-primary)';
+      dot.style.transform = 'translateX(20px)';
+    } else {
+      span.style.background = 'var(--gray-light)';
+      dot.style.transform = 'translateX(0)';
+    }
+  };
+  t.addEventListener('change', () => {
+    update();
+    toast('Preferência atualizada');
+  });
+  update();
+});
+
+/* ---------- Clima ---------- */
+document.getElementById('climateFilters').addEventListener('click', (e) => {
+  const chip = e.target.closest('.filter-chip');
+  if (!chip) return;
+  document.querySelectorAll('#climateFilters .filter-chip').forEach(c => c.classList.remove('active'));
+  chip.classList.add('active');
+  state.currentRegion = chip.dataset.region;
+  const r = DATA.regions[state.currentRegion];
+  document.getElementById('climaTemp').textContent = r.temp;
+  document.getElementById('climaPrec').textContent = r.prec;
+  document.getElementById('climaUmid').textContent = r.umid;
+  document.getElementById('climaHidrico').textContent = r.hidrico;
+  initClimateCharts();
+});
+
+function initClimateCharts() {
+  const ctx1 = document.getElementById('chartTemp');
+  const ctx2 = document.getElementById('chartPrec');
+  if (!ctx1 || !ctx2) return;
+
+  if (state.charts.temp) state.charts.temp.destroy();
+  if (state.charts.prec) state.charts.prec.destroy();
+
+  const days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+  const r = DATA.regions[state.currentRegion];
+  const tempData = days.map((_, i) => r.temp + (Math.sin(i) * 2) + (Math.random() * 1.5 - 0.75));
+  const tempAvg = days.map(() => r.temp - 1);
+
+  state.charts.temp = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [
+        {
+          label: 'Temperatura observada',
+          data: tempData,
+          borderColor: '#1F6845',
+          backgroundColor: 'rgba(31,104,69,0.1)',
+          tension: 0.4,
+          fill: true,
+          borderWidth: 2.5,
+          pointBackgroundColor: '#1F6845',
+          pointRadius: 4,
+        },
+        {
+          label: 'Média histórica',
+          data: tempAvg,
+          borderColor: '#65A878',
+          borderDash: [5,5],
+          tension: 0,
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, boxWidth: 12 } }
+      },
+      scales: {
+        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Inter', size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+      }
+    }
+  });
+
+  const precObs = days.map((_, i) => Math.max(0, r.prec + (Math.cos(i) * 8) + (Math.random() * 6 - 3)));
+  const precAvg = days.map(() => r.prec + 4);
+
+  state.charts.prec = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: days,
+      datasets: [
+        {
+          label: 'Observado',
+          data: precObs,
+          backgroundColor: '#1F6845',
+          borderRadius: 6,
+        },
+        {
+          label: 'Média histórica',
+          data: precAvg,
+          backgroundColor: '#DCE9D9',
+          borderRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, boxWidth: 12 } }
+      },
+      scales: {
+        y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { family: 'Inter', size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+      }
+    }
+  });
+}
+
+/* ---------- Produção ---------- */
+document.querySelectorAll('.activity-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.activity-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.currentActivity = tab.dataset.activity;
+    renderProduction();
+  });
+});
+
+document.querySelectorAll('.activity-card').forEach(card => {
+  card.addEventListener('click', () => {
+    state.currentActivity = card.dataset.activity;
+    navigate('producao');
+    document.querySelectorAll('.activity-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.activity === state.currentActivity);
+    });
+  });
+});
+
+function renderProduction() {
+  const a = DATA.activities[state.currentActivity];
+  const container = document.getElementById('productionContent');
+  container.innerHTML = `
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-wrap"><i data-lucide="${a.icon}" style="width:18px;height:18px"></i></div>
+        <h3>${a.name}</h3>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:14px">${a.description}</p>
+
+      <div class="label">Fases do ciclo</div>
+      <div class="cycle-timeline">
+        ${a.phases.map((p, i) => `
+          <div class="cycle-stage ${i === a.currentPhase ? 'current' : ''}">
+            <div style="font-size:10px;opacity:0.7">Fase ${i+1}</div>
+            <div class="stage-name">${p}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div style="font-size:11px;color:var(--gray);margin-top:4px">
+        <i data-lucide="info" style="width:12px;height:12px;display:inline;vertical-align:-2px"></i>
+        Fase atual destacada em verde.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-wrap"><i data-lucide="droplets" style="width:18px;height:18px"></i></div>
+        <h3>Água e temperatura</h3>
+      </div>
+      <div class="variable-list">
+        <div class="variable-item">
+          <div class="var-icon"><i data-lucide="waves" style="width:16px;height:16px"></i></div>
+          <div class="var-info">
+            <div class="var-name">Necessidade hídrica</div>
+            <div class="var-desc">${a.water}</div>
+          </div>
+        </div>
+        <div class="variable-item">
+          <div class="var-icon"><i data-lucide="thermometer" style="width:16px;height:16px"></i></div>
+          <div class="var-info">
+            <div class="var-name">Temperatura</div>
+            <div class="var-desc">${a.temp}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-wrap"><i data-lucide="alert-circle" style="width:18px;height:18px"></i></div>
+        <h3>Possíveis impactos climáticos</h3>
+      </div>
+      <div class="variable-list">
+        ${a.impacts.map(imp => `
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="alert-triangle" style="width:16px;height:16px;color:var(--warning)"></i></div>
+            <div class="var-info">
+              <div class="var-desc" style="color:var(--text);font-size:13px">${imp}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-wrap"><i data-lucide="list" style="width:18px;height:18px"></i></div>
+        <h3>Variáveis para monitorar</h3>
+      </div>
+      <div class="variable-list">
+        ${a.variables.map(v => `
+          <div class="variable-item">
+            <div class="var-icon"><i data-lucide="${v.icon}" style="width:16px;height:16px"></i></div>
+            <div class="var-info">
+              <div class="var-name">${v.name}</div>
+              <div class="var-desc">${v.desc}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="icon-wrap"><i data-lucide="help-circle" style="width:18px;height:18px"></i></div>
+        <h3>O que isso significa para minha produção?</h3>
+      </div>
+      <p style="font-size:13px;line-height:1.6;color:var(--text)">
+        ${state.currentActivity === 'soja' ? 'A soja depende de chuvas bem distribuídas, especialmente na floração e no enchimento dos grãos. Períodos secos prolongados ou calor excessivo nessas fases podem reduzir a produtividade. Acompanhar a umidade do solo e a previsão de chuvas ajuda a antecipar decisões.' : ''}
+        ${state.currentActivity === 'milho' ? 'O milho é muito sensível à falta de água na floração. Se chover pouco nessa fase, a lavoura pode produzir menos grãos. Temperaturas muito altas também atrapalham o desenvolvimento. Monitorar o clima ajuda a decidir a melhor época de plantio.' : ''}
+        ${state.currentActivity === 'pecuaria' ? 'A pecuária depende de pastagens saudáveis e água disponível. Seca prolongada reduz a qualidade do pasto e pode afetar o ganho de peso dos animais. Calor excessivo causa desconforto térmico. Acompanhar o clima ajuda a planejar suplementação e manejo de água.' : ''}
+      </p>
+      <button class="btn btn-primary btn-block mt-12" onclick="navigate('ia')">
+        <i data-lucide="message-circle" style="width:16px;height:16px"></i>
+        Perguntar ao IAgroritmo IA
+      </button>
+    </div>
+  `;
+  if (window.lucide) lucide.createIcons();
+}
+
+/* ---------- IA Assistente ---------- */
+const AI_RESPONSES = {
+  'elnino': {
+    title: 'El Niño e sua soja',
+    content: `
+      <div class="msg-section">
+        <strong>O que está acontecendo?</strong>
+        O El Niño é um fenômeno climático que aquece as águas do Oceano Pacífico. Isso pode mudar o regime de chuvas e a temperatura no Brasil.
+      </div>
+      <div class="msg-section">
+        <strong>Por que isso importa?</strong>
+        Em algumas regiões, o El Niño pode trazer menos chuva e mais calor. Para a soja, isso pode significar estresse hídrico, especialmente na floração e no enchimento dos grãos.
+      </div>
+      <div class="msg-section">
+        <strong>O que observar?</strong>
+        <ul>
+          <li>Umidade do solo nas semanas críticas</li>
+          <li>Previsão de chuvas para os próximos 15 dias</li>
+          <li>Temperaturas máximas diárias</li>
+        </ul>
+      </div>
+      <div class="msg-section">
+        <strong>Estratégias a considerar</strong>
+        <ul>
+          <li>Acompanhar de perto o calendário de plantio</li>
+          <li>Avaliar cultivares com melhor resposta ao estresse hídrico</li>
+          <li>Planejar reserva de água quando possível</li>
+          <li>Monitorar sinais de estresse na lavoura</li>
+        </ul>
+      </div>
+    `
+  },
+  'risco': {
+    title: 'Risco para sua produção',
+    content: `
+      <div class="msg-section">
+        <strong>O que está acontecendo?</strong>
+        Com base nos dados demonstrativos da sua região, há indicadores de atenção: chuvas abaixo da média e temperaturas acima do esperado.
+      </div>
+      <div class="msg-section">
+        <strong>Por que isso importa?</strong>
+        Essas condições podem afetar o desenvolvimento da soja na fase atual, que é sensível à disponibilidade de água.
+      </div>
+      <div class="msg-section">
+        <strong>O que observar?</strong>
+        <ul>
+          <li>Volume de chuva nos próximos 10 dias</li>
+          <li>Aspecto da lavoura (murchamento, folhas enroladas)</li>
+          <li>Umidade do solo em diferentes pontos da área</li>
+        </ul>
+      </div>
+      <div class="msg-section">
+        <strong>Estratégias a considerar</strong>
+        <ul>
+          <li>Reforçar o monitoramento diário da lavoura</li>
+          <li>Avaliar com seu técnico a necessidade de ajustes</li>
+          <li>Consultar o simulador para entender cenários</li>
+        </ul>
+      </div>
+    `
+  },
+  'pastagem': {
+    title: 'Falta de chuva e pastagens',
+    content: `
+      <div class="msg-section">
+        <strong>O que está acontecendo?</strong>
+        Quando chove menos do que o esperado, as pastagens perdem qualidade e volume. A oferta de alimento para o rebanho diminui.
+      </div>
+      <div class="msg-section">
+        <strong>Por que isso importa?</strong>
+        Animais com menos alimento ganham menos peso e podem ter queda na produção de leite. A falta de água também afeta diretamente o bem-estar.
+      </div>
+      <div class="msg-section">
+        <strong>O que observar?</strong>
+        <ul>
+          <li>Altura e cobertura das pastagens</li>
+          <li>Condição corporal dos animais</li>
+          <li>Nível de bebedouros e fontes de água</li>
+        </ul>
+      </div>
+      <div class="msg-section">
+        <strong>Estratégias a considerar</strong>
+        <ul>
+          <li>Planejar suplementação alimentar estratégica</li>
+          <li>Garantir água em quantidade e qualidade</li>
+          <li>Avaliar ajuste de lotação das áreas</li>
+          <li>Considerar bancos de proteína ou silagem</li>
+        </ul>
+      </div>
+    `
+  },
+  'alerta': {
+    title: 'Sobre o alerta',
+    content: `
+      <div class="msg-section">
+        <strong>O que está acontecendo?</strong>
+        O alerta indica que as chuvas estão abaixo da média histórica para este período na sua região.
+      </div>
+      <div class="msg-section">
+        <strong>Por que isso importa?</strong>
+        É um sinal para ficar atento. Não significa necessariamente perda, mas indica que algumas decisões podem precisar de ajuste.
+      </div>
+      <div class="msg-section">
+        <strong>O que observar?</strong>
+        <ul>
+          <li>Previsões atualizadas para os próximos dias</li>
+          <li>Condição atual da sua lavoura ou pastagem</li>
+          <li>Reservas de água disponíveis</li>
+        </ul>
+      </div>
+      <div class="msg-section">
+        <strong>Estratégias a considerar</strong>
+        <ul>
+          <li>Reforçar o monitoramento diário</li>
+          <li>Conversar com seu técnico sobre ajustes</li>
+          <li>Usar o simulador para testar cenários</li>
+        </ul>
+      </div>
+    `
+  },
+  'preparar': {
+    title: 'Como se preparar',
+    content: `
+      <div class="msg-section">
+        <strong>O que fazer agora?</strong>
+        Preparar-se significa antecipar cenários e ter opções de resposta. Algumas ações simples fazem diferença.
+      </div>
+      <div class="msg-section">
+        <strong>Passos práticos</strong>
+        <ul>
+          <li>Acompanhe diariamente o clima pela plataforma</li>
+          <li>Use o simulador para entender diferentes cenários</li>
+          <li>Mantenha reservas estratégicas (água, alimento)</li>
+          <li>Converse com seu técnico sobre ajustes de manejo</li>
+          <li>Observe sinais na lavoura ou no rebanho</li>
+        </ul>
+      </div>
+      <div class="msg-section">
+        <strong>Importante</strong>
+        Cada propriedade é única. As melhores decisões consideram suas condições específicas. Use a plataforma como apoio, não como substituto do seu conhecimento e do seu técnico.
+      </div>
+    `
+  },
+  'default': {
+    title: 'Sobre sua pergunta',
+    content: `
+      <div class="msg-section">
+        <strong>O que posso ajudar?</strong>
+        Posso explicar condições climáticas, impactos na produção e estratégias de adaptação com base nos dados da sua região.
+      </div>
+      <div class="msg-section">
+        <strong>Experimente perguntar</strong>
+        <ul>
+          <li>"Como o El Niño afeta minha soja?"</li>
+          <li>"Existe risco para minha produção?"</li>
+          <li>"Como a falta de chuva afeta minhas pastagens?"</li>
+          <li>"Como posso me preparar?"</li>
+        </ul>
+      </div>
+    `
+  }
+};
+
+function detectIntent(text) {
+  const t = text.toLowerCase();
+  if (t.includes('el niño') || t.includes('elnino') || t.includes('elnino')) return 'elnino';
+  if (t.includes('risco') || t.includes('risco') || t.includes('perigo')) return 'risco';
+  if (t.includes('pastagem') || t.includes('pasto') || t.includes('rebanho') || t.includes('chuva')) return 'pastagem';
+  if (t.includes('alerta') || t.includes('significa')) return 'alerta';
+  if (t.includes('preparar') || t.includes('fazer') || t.includes('como posso')) return 'preparar';
+  return 'default';
+}
+
+function addMessage(role, title, content, isHtml = false) {
+  const msgs = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg ' + role;
+  if (role === 'bot') {
+    div.innerHTML = `
+      ${title ? `<div class="msg-title">${title}</div>` : ''}
+      ${content}
+      <div class="demo-notice">
+        <i data-lucide="info" style="width:12px;height:12px;flex-shrink:0;margin-top:1px"></i>
+        <div>Assistente em modo demonstrativo. Respostas baseadas em cenários pré-configurados.</div>
+      </div>
+    `;
+  } else {
+    div.textContent = content;
+  }
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  if (window.lucide) lucide.createIcons();
+}
+
+function showTyping() {
+  const msgs = document.getElementById('aiMessages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.id = 'typingIndicator';
+  div.innerHTML = '<div style="display:flex;gap:4px"><span class="skeleton" style="width:8px;height:8px;border-radius:50%"></span><span class="skeleton" style="width:8px;height:8px;border-radius:50%"></span><span class="skeleton" style="width:8px;height:8px;border-radius:50%"></span></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+function removeTyping() {
+  const t = document.getElementById('typingIndicator');
+  if (t) t.remove();
+}
+
+function handleAIQuestion(text) {
+  addMessage('user', '', text);
+  showTyping();
+  setTimeout(() => {
+    removeTyping();
+    const intent = detectIntent(text);
+    const resp = AI_RESPONSES[intent];
+    addMessage('bot', resp.title, resp.content, true);
+  }, 900 + Math.random() * 600);
+}
+
+document.getElementById('aiSend').addEventListener('click', () => {
+  const input = document.getElementById('aiInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  handleAIQuestion(text);
+});
+document.getElementById('aiInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('aiSend').click();
+});
+document.getElementById('aiQuick').addEventListener('click', (e) => {
+  const btn = e.target.closest('.ai-quick-btn');
+  if (!btn) return;
+  handleAIQuestion(btn.dataset.q);
+});
+
+/* ---------- Simulador ---------- */
+document.getElementById('scenarioGrid').addEventListener('click', (e) => {
+  const card = e.target.closest('.scenario-card');
+  if (!card) return;
+  document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+  card.classList.add('active');
+  state.currentScenario = card.dataset.scenario;
+  document.getElementById('customParams').classList.toggle('hidden', state.currentScenario !== 'personalizado');
+});
+
+['sliderPrec', 'sliderTemp', 'sliderInt'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    if (id === 'sliderPrec') document.getElementById('sliderPrecVal').textContent = el.value + '%';
+    if (id === 'sliderTemp') document.getElementById('sliderTempVal').textContent = (el.value > 0 ? '+' : '') + el.value + '°C';
+    if (id === 'sliderInt') {
+      const labels = { 1: 'Fraca', 2: 'Média', 3: 'Forte' };
+      document.getElementById('sliderIntVal').textContent = labels[el.value];
+    }
+  });
+});
+
+document.getElementById('btnRunSim').addEventListener('click', () => {
+  const btn = document.getElementById('btnRunSim');
+  btn.innerHTML = '<span class="loader"></span> Processando...';
+  btn.disabled = true;
+
+  setTimeout(() => {
+    runSimulation();
+    btn.innerHTML = '<i data-lucide="play" style="width:16px;height:16px"></i> Executar Simulação';
+    btn.disabled = false;
+    if (window.lucide) lucide.createIcons();
+  }, 1200);
+});
+
+function runSimulation() {
+  const scenario = state.currentScenario;
+  const activity = document.getElementById('simActivity').value;
+  const stateCode = document.getElementById('simState').value;
+  const s = DATA.scenarios[scenario];
+
+  let precVar = s.prec, tempVar = s.temp, intensity = s.intensity;
+  if (scenario === 'personalizado') {
+    precVar = parseInt(document.getElementById('sliderPrec').value);
+    tempVar = parseFloat(document.getElementById('sliderTemp').value);
+    intensity = parseInt(document.getElementById('sliderInt').value);
+  }
+
+  // Risk level calculation
+  let risk = 'low', riskText = 'Baixo', riskClass = 'risk-low';
+  const absImpact = Math.abs(precVar) + Math.abs(tempVar) * 5;
+  if (absImpact > 30 || intensity === 3) {
+    risk = 'high'; riskText = 'Alto'; riskClass = 'risk-high';
+  } else if (absImpact > 15 || intensity === 2) {
+    risk = 'medium'; riskText = 'Moderado'; riskClass = 'risk-medium';
+  }
+
+  // Impacts & strategies by activity
+  const impacts = [];
+  const strategies = [];
+  if (scenario === 'personalizado') {
+    if (precVar < -10) impacts.push(`Redução de ${Math.abs(precVar)}% na precipitação pode causar estresse hídrico.`);
+    if (precVar > 15) impacts.push(`Aumento de ${precVar}% na precipitação pode favorecer doenças.`);
+    if (tempVar > 2) impacts.push(`Temperatura ${tempVar}°C acima da média pode acelerar o ciclo.`);
+    if (tempVar < -1) impacts.push(`Temperatura abaixo da média pode atrasar o desenvolvimento.`);
+    if (impacts.length === 0) impacts.push('Alterações dentro de faixa considerada moderada.');
+    strategies.push('Monitorar variáveis-chave com frequência.');
+    strategies.push('Consultar seu técnico para ajustes específicos.');
+  } else {
+    impacts.push(...s.impacts);
+    strategies.push(...s.strategies);
+  }
+
+  // Activity-specific adjustments
+  if (activity === 'soja' && precVar < -10) {
+    impacts.unshift('Soja em fase sensível pode sofrer com déficit hídrico.');
+  }
+  if (activity === 'milho' && tempVar > 2) {
+    impacts.unshift('Milho pode ter polinização afetada por calor excessivo.');
+  }
+  if (activity === 'pecuaria' && precVar < -10) {
+    impacts.unshift('Pastagens podem perder qualidade e volume.');
+    strategies.unshift('Planejar suplementação alimentar estratégica.');
+  }
+
+  // Update UI
+  document.getElementById('resScenario').textContent = s.name;
+  document.getElementById('resRegion').textContent = `${stateCode} · ${DATA.activities[activity].name}`;
+  document.getElementById('resRiskText').textContent = riskText;
+  const riskLevel = document.getElementById('resRiskLevel');
+  riskLevel.className = 'risk-level ' + riskClass;
+  const riskIcon = risk === 'high' ? 'alert-octagon' : risk === 'medium' ? 'alert-triangle' : 'check-circle';
+  riskLevel.innerHTML = `<i data-lucide="${riskIcon}" style="width:28px;height:28px"></i>`;
+
+  document.getElementById('resImpacts').innerHTML = impacts.map(i => `
+    <div class="impact-item">
+      <div class="imp-icon"><i data-lucide="alert-circle" style="width:14px;height:14px"></i></div>
+      <div>${i}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('resStrategies').innerHTML = strategies.map(s => `
+    <div class="impact-item">
+      <div class="imp-icon" style="background:var(--green-light);color:var(--green-primary)"><i data-lucide="lightbulb" style="width:14px;height:14px"></i></div>
+      <div>${s}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('simResult').classList.add('visible');
+  if (window.lucide) lucide.createIcons();
+
+  // Chart
+  setTimeout(() => initSimChart(precVar, tempVar, scenario), 100);
+
+  document.getElementById('simResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  toast('Simulação concluída', 'success');
+}
+
+function initSimChart(precVar, tempVar, scenario) {
+  const ctx = document.getElementById('chartSim');
+  if (!ctx) return;
+  if (state.charts.sim) state.charts.sim.destroy();
+
+  const labels = ['Precipitação', 'Temperatura', 'Umidade', 'Dispon. hídrica'];
+  const refData = [100, 100, 100, 100];
+  const simData = [
+    Math.max(20, Math.min(180, 100 + precVar)),
+    Math.max(60, Math.min(150, 100 + tempVar * 8)),
+    Math.max(30, Math.min(150, 100 + precVar * 0.6)),
+    Math.max(25, Math.min(150, 100 + precVar * 0.8))
+  ];
+
+  state.charts.sim = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Referência',
+          data: refData,
+          backgroundColor: '#DCE9D9',
+          borderRadius: 6,
+        },
+        {
+          label: 'Cenário simulado',
+          data: simData,
+          backgroundColor: '#1F6845',
+          borderRadius: 6,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, boxWidth: 12 } }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { font: { family: 'Inter', size: 11 }, callback: v => v + '%' }
+        },
+        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+      }
+    }
+  });
+}
+
+/* ---------- Mapa ---------- */
+function initMap() {
+  if (state.map) {
+    state.map.invalidateSize();
+    return;
+  }
+  state.map = L.map('map', {
+    zoomControl: true,
+    scrollWheelZoom: false
+  }).setView([-14.235, -51.9253], 4);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(state.map);
+
+  state.mapMarkers.forEach(m => m.remove());
+  state.mapMarkers = [];
+
+  DATA.mapPoints.forEach(p => {
+    const color = p.status === 'danger' ? '#C0392B' : p.status === 'warn' ? '#D98E04' : '#1F6845';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:18px;height:18px;background:${color};border:3px solid white;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,0.3)"></div>`,
+      iconSize: [18, 18],
+      iconAnchor: [9, 9]
+    });
+    const marker = L.marker([p.lat, p.lng], { icon }).addTo(state.map);
+    marker.bindPopup(`
+      <div class="popup-title">${p.city} — ${p.state}</div>
+      <div class="popup-info">
+        <strong>Atividades:</strong> ${p.activity}<br>
+        <strong>Condição:</strong> ${p.info}
+      </div>
+    `);
+    state.mapMarkers.push(marker);
+  });
+
+  setTimeout(() => state.map.invalidateSize(), 200);
+}
+
+/* ---------- Relatórios ---------- */
+document.querySelectorAll('.report-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    state.currentReport = tab.dataset.report;
+    renderReport();
+  });
+});
+
+function renderReport() {
+  const container = document.getElementById('reportContent');
+  if (state.currentReport === 'produtor') {
+    container.innerHTML = `
+      <div class="report-content" id="reportArea">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--green-light)">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--green-secondary),var(--green-primary));display:grid;place-items:center">
+            <i data-lucide="leaf" style="width:22px;height:22px;color:white"></i>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--green-forest)">Relatório IAgroritmo</div>
+            <div style="font-size:12px;color:var(--gray)">Para o produtor · ${new Date().toLocaleDateString('pt-BR')}</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <h4>Região e atividade</h4>
+          <p><strong>Propriedade:</strong> Fazenda Boa Esperança</p>
+          <p><strong>Localização:</strong> Ribeirão Preto — SP</p>
+          <p><strong>Atividade principal:</strong> Soja</p>
+          <p><strong>Cenário climático atual:</strong> El Niño moderado (ilustrativo)</p>
+        </div>
+
+        <div class="report-section">
+          <h4>Principais indicadores</h4>
+          <ul>
+            <li>Temperatura média: 28°C (acima da média)</li>
+            <li>Precipitação acumulada: 12 mm (abaixo da média)</li>
+            <li>Umidade relativa: 68%</li>
+            <li>Disponibilidade hídrica: moderada</li>
+          </ul>
+        </div>
+
+        <div class="report-section">
+          <h4>Alertas ativos</h4>
+          <ul>
+            <li>Chuvas abaixo da média nos próximos 15 dias</li>
+            <li>Temperaturas acima do esperado</li>
+            <li>Atenção à umidade do solo na floração da soja</li>
+          </ul>
+        </div>
+
+        <div class="report-section">
+          <h4>Resumo da análise</h4>
+          <p>O cenário atual pede atenção moderada. As chuvas abaixo da média combinadas com temperaturas elevadas podem afetar a soja em fase de floração. A situação não é crítica, mas recomenda monitoramento reforçado.</p>
+        </div>
+
+        <div class="report-section">
+          <h4>Estratégias a considerar</h4>
+          <ul>
+            <li>Monitorar diariamente a umidade do solo</li>
+            <li>Avaliar com o técnico ajustes de manejo</li>
+            <li>Usar o simulador para testar cenários</li>
+            <li>Planejar reserva estratégica de água</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <i data-lucide="info" style="width:16px;height:16px"></i>
+          <div>Relatório demonstrativo. Em produção, os dados viriam de fontes oficiais integradas.</div>
+        </div>
+      </div>
+    `;
+  } else {
+    container.innerHTML = `
+      <div class="report-content" id="reportArea">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;padding-bottom:14px;border-bottom:2px solid var(--green-light)">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--green-forest),var(--green-primary));display:grid;place-items:center">
+            <i data-lucide="file-text" style="width:22px;height:22px;color:white"></i>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--green-forest)">Relatório Técnico</div>
+            <div style="font-size:12px;color:var(--gray)">IAgroritmo · ${new Date().toLocaleDateString('pt-BR')}</div>
+          </div>
+        </div>
+
+        <div class="report-section">
+          <h4>Contexto do estudo</h4>
+          <p><strong>Tipo:</strong> Estudo aplicado e exploratório</p>
+          <p><strong>Abordagem:</strong> Quantitativa</p>
+          <p><strong>Abrangência:</strong> Brasil</p>
+          <p><strong>Período:</strong> 2026–2027</p>
+          <p><strong>Estudo de caso:</strong> El Niño 2026–2027</p>
+          <p><strong>Instituição:</strong> Universidade de Mogi das Cruzes — UMC</p>
+          <p><strong>Orientador:</strong> Higor Barreto Campos</p>
+        </div>
+
+        <div class="report-section">
+          <h4>Variáveis consideradas</h4>
+          <ul>
+            <li>Temperatura do ar (°C)</li>
+            <li>Precipitação pluviométrica (mm)</li>
+            <li>Umidade relativa do ar (%)</li>
+            <li>Disponibilidade hídrica do solo</li>
+            <li>Anomalias climáticas sazonais</li>
+          </ul>
+        </div>
+
+        <div class="report-section">
+          <h4>Métodos demonstrativos</h4>
+          <ul>
+            <li>Análise estatística descritiva</li>
+            <li>Comparação entre cenários (referência, El Niño, La Niña)</li>
+            <li>Construção de indicadores de risco agroclimático</li>
+            <li>Interpretação contextualizada por IA (demonstrativa)</li>
+          </ul>
+        </div>
+
+        <div class="report-section">
+          <h4>Indicadores gerados</h4>
+          <p>Nível de risco demonstrativo (baixo, moderado, alto) com base em desvios das variáveis climáticas em relação à média histórica.</p>
+        </div>
+
+        <div class="report-section">
+          <h4>Limitações</h4>
+          <ul>
+            <li>Protótipo em estágio demonstrativo</li>
+            <li>Dados climáticos ilustrativos, não em tempo real</li>
+            <li>Classificações de risco não validadas cientificamente</li>
+            <li>Sem estimativas de perda de produtividade ou prejuízo financeiro</li>
+            <li>Recomendações não substituem assistência técnica profissional</li>
+          </ul>
+        </div>
+
+        <div class="report-section">
+          <h4>Fontes previstas para integração</h4>
+          <ul>
+            <li>INMET — Instituto Nacional de Meteorologia</li>
+            <li>INPE/CPTEC — Monitoramento climático</li>
+            <li>NOAA — Dados globais</li>
+            <li>IBGE — Dados territoriais e produtivos</li>
+            <li>CONAB — Safra e produção agrícola</li>
+          </ul>
+        </div>
+
+        <div class="info-box">
+          <i data-lucide="info" style="width:16px;height:16px"></i>
+          <div>Este relatório descreve a metodologia do protótipo. Não substitui publicações científicas ou laudos técnicos oficiais.</div>
+        </div>
+      </div>
+    `;
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+document.getElementById('btnPrint').addEventListener('click', () => window.print());
+
+document.getElementById('btnExportPDF').addEventListener('click', async () => {
+  const btn = document.getElementById('btnExportPDF');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<span class="loader"></span> Gerando...';
+  btn.disabled = true;
+
+  try {
+    const area = document.getElementById('reportArea');
+    if (!area) throw new Error('Área não encontrada');
+    const canvas = await html2canvas(area, { scale: 2, backgroundColor: '#FFFFFF' });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const imgWidth = pageWidth - 20;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 10;
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= (pageHeight - 20);
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight + 10;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= (pageHeight - 20);
+    }
+
+    pdf.save('iagritmo-relatorio.pdf');
+    toast('PDF gerado com sucesso', 'success');
+  } catch (err) {
+    console.error(err);
+    toast('Erro ao gerar PDF', 'error');
+  } finally {
+    btn.innerHTML = original;
+    btn.disabled = false;
+    if (window.lucide) lucide.createIcons();
+  }
+});
+
+/* ---------- Inicialização ---------- */
+function init() {
+  // Data
+  const today = new Date();
+  document.getElementById('todayDate').textContent = today.toLocaleDateString('pt-BR');
+
+  // Icons
+  if (window.lucide) lucide.createIcons();
+
+  // Notifications
+  updateNotifBadge();
+
+  // Production
+  renderProduction();
+
+  // Notifications list (pre-render)
+  renderNotifications();
+
+  // Report
+  renderReport();
+
+  // Welcome toast
+  setTimeout(() => toast('Bem-vindo ao IAgroritmo', 'success'), 500);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize', () => {
+  if (state.map) state.map.invalidateSize();
+});
+</script>
+</body>
+</html>
